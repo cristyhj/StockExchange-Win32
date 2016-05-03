@@ -1,7 +1,7 @@
 #pragma once
 
 struct Company {
-	char name[20];
+	WCHAR name[20];
 	int income;
 	float variation;
 };

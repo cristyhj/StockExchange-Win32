@@ -96,7 +96,7 @@ int Heap::Get() {
 }
 
 void Heap::RandomizeVary(int i) {
-	int randValue = rand() % 200 - 100;
+	int randValue = rand() % 2000 - 1000;
 	float randomValue = (float)randValue / (float)1000;
 	heap[i].variation += randomValue;
 	if (randomValue < 0)
@@ -108,7 +108,7 @@ void Heap::RandomizeVary(int i) {
 void Heap::Save() {
 	//if (heapDimension == 0)
 	//	return;
-	ofstream file("save.txt");
+	ofstream file("save.sav");
 	/*for (int i = 0; i < heapDimension; i++) {
 	file << heap[i].name << " " << heap[i].income << " " << heap[i].variation << "\n";
 	}*/
@@ -119,7 +119,7 @@ void Heap::Save() {
 }
 
 void Heap::Load() {
-	ifstream file("save.txt");
+	ifstream file("save.sav");
 	Company temp;
 	/*while (!file.eof()) {
 	file >> temp.name >> temp.income >> temp.variation;
@@ -142,7 +142,7 @@ void Heap::Load() {
 int Heap::Search(Company searchElement, int startIndex) {
 	if (startIndex > heapDimension)
 		return -1;
-	if (strcmp(searchElement.name, heap[startIndex].name) == 0)
+	if (wcscmp(searchElement.name, heap[startIndex].name) == 0)
 		return startIndex;
 	int l = Search(searchElement, Child1(startIndex));
 	if (l > 0)
@@ -159,6 +159,7 @@ Company Heap::ReturnCompany(int index) {
 		Company Company;
 		Company.income = -1;
 		return Company;
-	} else
+	} else {
 		return heap[index];
+	}
 }

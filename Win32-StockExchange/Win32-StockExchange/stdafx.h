@@ -22,5 +22,7 @@
 
 #include <iostream>
 #include <fstream>
+#include "Heap.h"
+#include <time.h>
 
 using namespace std;
