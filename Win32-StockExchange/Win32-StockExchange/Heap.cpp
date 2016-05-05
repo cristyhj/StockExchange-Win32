@@ -163,3 +163,43 @@ Company Heap::ReturnCompany(int index) {
 		return heap[index];
 	}
 }
+
+LPWSTR Heap::InfoList() {
+	LPWSTR infoLP = (LPWSTR)malloc(sizeof(WCHAR) * MAX_PATH * 10);
+	LPWSTR convert = (LPWSTR)malloc(sizeof(WCHAR) * 40);
+	int temp;
+	float tempF;
+
+	wcscpy_s(infoLP, MAX_PATH * 10, L"");
+
+	for (int i = 0; i < heapDimension; i++) {
+		wcscat_s(infoLP, MAX_PATH * 10, heap[i].name);
+		_itow_s(heap[i].income, convert, 40, 10);
+		wcscat_s(infoLP, MAX_PATH * 10, L" : ");
+		wcscat_s(infoLP, MAX_PATH * 10, convert);
+		wcscat_s(infoLP, MAX_PATH * 10, L" $  -> ");
+
+		int neg;
+		if (heap[i].variation < 0) {
+			neg = -1;
+			heap[i].variation *= neg;
+		} else {
+			neg = 1;
+		}
+
+		temp = (int)heap[i].variation;
+		temp *= neg;
+		_itow_s(temp, convert, 40, 10);
+		wcscat_s(infoLP, MAX_PATH * 10, convert);
+		wcscat_s(infoLP, MAX_PATH * 10, L".");
+
+		tempF = heap[i].variation - temp;
+		tempF *= 10000;
+		temp = (int)tempF;
+		_itow_s(temp, convert, 40, 10);
+		wcscat_s(infoLP, MAX_PATH * 10, convert);
+		wcscat_s(infoLP, MAX_PATH * 10, L" %\r\n");
+	}
+	free(convert);
+	return infoLP;
+}

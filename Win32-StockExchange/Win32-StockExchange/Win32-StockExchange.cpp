@@ -5,7 +5,7 @@
 #include "Win32-StockExchange.h"
 
 #define MAX_LOADSTRING 100
-#define MAX_GFRECORDS 8
+#define MAX_GFRECORDS 80
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -32,8 +32,10 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    Dialog1(HWND, UINT, WPARAM, LPARAM);
 void				PushButtonAction();
 void				InvestButtonAction();
+void				WithdrawButtonAction(HWND);
 int					TransformFloat(float);
 void				UpdateGf(HWND, int);
 
@@ -49,9 +51,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // TODO: Place code here.
 	srand(time(NULL));
 	heap.Load();
-	for (int i = 380; iCurr < MAX_GFRECORDS; i += (320 / MAX_GFRECORDS)) {
+			// Impartim coord X a gf in MAX_GF parti
+	for (int i = 370; iCurr < MAX_GFRECORDS; i += (330 / MAX_GFRECORDS)) {
 		xGfPosition[iCurr++] = i;
 	}
+			// Initializari:
 	iCurr = 0;
 	investition.income = 0;
 
@@ -146,6 +150,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	   20, 190, 275, 30, hWnd, NULL, NULL, NULL);
    investSumBox = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_LEFT | ES_NUMBER,
 	   60, 160, 235, 20, hWnd, NULL, NULL, NULL);
+   withdrawButton = CreateWindowEx(0, L"BUTTON", L"Vindeti Acum!", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+	   20, 240, 275, 40, hWnd, NULL, NULL, NULL);
 
    group = CreateWindowEx(WS_EX_CONTROLPARENT, L"BUTTON", L"Adaugati o companie:", WS_CHILD | WS_VISIBLE | BS_GROUPBOX | WS_GROUP,
 	   10, 10, 300, 120, hWnd, NULL, NULL, NULL);
@@ -160,6 +166,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    SendMessage(incomeBox, WM_SETFONT, WPARAM(myFont), TRUE);
    SendMessage(investButton, WM_SETFONT, WPARAM(myFont), TRUE);
    SendMessage(investSumBox, WM_SETFONT, WPARAM(myFont), TRUE);
+   SendMessage(withdrawButton, WM_SETFONT, WPARAM(myFont), TRUE);
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -236,14 +243,38 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				PushButtonAction();
 			}
 			if (investButton == (HWND)lParam) {
-				InvestButtonAction();
+				if (!investition.income)
+					InvestButtonAction();
 			}
 			if (withdrawButton == (HWND)lParam) {
-				//WithdrawButtonAction();
+				if (investition.income)
+					WithdrawButtonAction(hWnd);
 			}
 			break;
+		case ID_HELP_INFO:
+		{
+			HWND aDiag = CreateDialog((HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE),
+				MAKEINTRESOURCE(IDD_DIALOG1),
+				hWnd,
+				(DLGPROC)Dialog1);
+			// check for errors
+			if (aDiag == NULL) {
+				WCHAR dwLE = GetLastError();
+				LPWSTR szLE = (LPWSTR)malloc(sizeof(WCHAR) * 16);
+				_ltow_s(dwLE, szLE, 16, 10);
+				MessageBox(hWnd, szLE, TEXT("Error"), MB_OK);
+			}
+			ShowWindow(aDiag, SW_SHOW);	
+		}
+			break;
 		case IDM_ABOUT:
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			DialogBox((HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE),
+				MAKEINTRESOURCE(IDD_ABOUTBOX),
+				hWnd,
+				(DLGPROC)Dialog1);
+			break;
+		case ID_FILE_SAVE:
+			heap.Save();
 			break;
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
@@ -261,7 +292,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if (investition.income) {
 				Company temp = heap.ReturnCompany(heap.Search(investition, 0));
 				yGfPosition[iCurr] = TransformFloat(temp.variation);
-				UpdateGf(hWnd, iCurr++);
+				if (iCurr) {
+					UpdateGf(hWnd, iCurr);
+					if (iCurr == MAX_GFRECORDS) {
+						iCurr = 0;
+						break;
+					}
+				}
+				iCurr++;
 			}
 		}
 		break;
@@ -296,6 +334,29 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     return (INT_PTR)FALSE;
 }
 
+INT_PTR CALLBACK Dialog1(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) {
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message) {
+	case WM_INITDIALOG:
+		SendMessage(hDlg, WM_CREATE, wParam, lParam);
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK) {
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	case WM_CREATE:
+	{
+		HWND hText = GetDlgItem(hDlg, IDC_EDIT1);
+		LPWSTR infoLP = heap.InfoList();
+		SetWindowText(hText, infoLP);
+	}
+	}
+	return (INT_PTR)FALSE;
+}
+
 
 
 
@@ -318,7 +379,7 @@ void PushButtonAction() {
 	GetWindowText(companyNameBox, companyNameLPWSTR, MAX_PATH);
 	GetWindowText(incomeBox, incomeLPWSTR, MAX_PATH);
 	if (wcslen(companyNameLPWSTR) == 0 || wcslen(incomeLPWSTR) == 0) {
-		MessageBox(NULL, L"Intoduceti valorile!", L"Error", MB_OK | MB_ICONERROR);
+		MessageBox(NULL, L"Intoduceti valorile!", L"Error", MB_OK | MB_ICONINFORMATION);
 		return;
 	}
 
@@ -341,12 +402,29 @@ void InvestButtonAction() {
 	LPWSTR message = (LPWSTR)malloc(sizeof(WCHAR) * MAX_PATH);
 	GetWindowText(investSumBox, investLPWSTR, MAX_PATH);
 	if (wcslen(investLPWSTR) == 0) {
-		MessageBox(NULL, L"Intoduceti valorile!", L"Error", MB_OK);
+		MessageBox(NULL, L"Intoduceti valorile!", L"Error", MB_OK | MB_ICONINFORMATION);
 		return;
 	}
 	
 	int sum = _wtoi(investLPWSTR);
 	investition = heap.Peek(sum);
+
+	if (investition.income < 0) {
+		int cIncome = investition.income + sum;
+		investition.income = 0;
+		heap.Peek(-sum);
+
+		wcscpy_s(message, MAX_PATH, L"Nu puteti cumpara mai mult decat detine compania!\r\nCompania detine ");
+		_itow_s(cIncome, investLPWSTR, MAX_PATH, 10);
+		wcscat_s(message, MAX_PATH, investLPWSTR);
+		wcscat_s(message, MAX_PATH, L" $.");
+		MessageBox(NULL, message, L"Error", MB_OK);
+		
+		free(investLPWSTR);
+		free(message);
+		return;
+	}
+
 	investition.income = sum;
 
 	// do sth with *invest
@@ -361,7 +439,37 @@ void InvestButtonAction() {
 	free(message);
 }
 
+void WithdrawButtonAction(HWND hWnd) {
+	int sum = investition.income;
+	Company investitionNow = heap.ReturnCompany(heap.Search(investition, 0));
+	float win = investitionNow.variation - investition.variation;
+	win *= sum;
+		// Reinitializari:
+	heap.Peek((int)-win);
+	investition.income = 0;
+	UpdateGf(hWnd, MAX_GFRECORDS);
+	iCurr = 0;
+
+	LPWSTR message = (LPWSTR)malloc(sizeof(WCHAR) * MAX_PATH);
+	LPWSTR winLP = (LPWSTR)calloc(sizeof(WCHAR), MAX_PATH);
+
+	if (win > 0)
+		wcscpy_s(message, MAX_PATH, L"Ai castigat ");
+	else
+		wcscpy_s(message, MAX_PATH, L"Ai pierdut  ");
+
+
+	_itow_s((int)win, winLP, 200, 10);
+	wcscat_s(message, MAX_PATH, winLP);
+	wcscat_s(message, MAX_PATH, L" !!!");
+	MessageBox(NULL, message, L"Mesaj", MB_OK);
+
+	free(message);
+	free(winLP);
+}
+
 int TransformFloat(float f) {
+	// Duce intervalul [-20; 20] -> [75; 360]
 	if (f < -20) f = -24;
 	if (f > 20) f = 24;
 	f += 24;
@@ -370,32 +478,30 @@ int TransformFloat(float f) {
 	f += 75;
 	return (int)f;
 }
-
 void UpdateGf(HWND hWnd, int iCurr) {
-	if (iCurr == 0) return;
 	HDC hdc = GetDC(hWnd);
 	if (iCurr == MAX_GFRECORDS) {
 		//Cod de adaugat pentru cazul in care se termina graficul
 
-
+		iCurr = 0;
 
 		//hBitmap = (HBITMAP)LoadImage(hInst, L"graph.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-		////Load bitMap:
-		//BITMAP 			bitmap;
-		//HDC 			hdcMem;
-		//HGDIOBJ 		oldBitmap;
+		//Load bitMap:
+		BITMAP 			bitmap;
+		HDC 			hdcMem;
+		HGDIOBJ 		oldBitmap;
 
-		//hdcMem = CreateCompatibleDC(hdc);
-		//oldBitmap = SelectObject(hdcMem, hBitmap);
+		hdcMem = CreateCompatibleDC(hdc);
+		oldBitmap = SelectObject(hdcMem, hBitmap);
 
-		//GetObject(hBitmap, sizeof(bitmap), &bitmap);
-		//BitBlt(hdc, 340, 10, bitmap.bmWidth, bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);
+		GetObject(hBitmap, sizeof(bitmap), &bitmap);
+		BitBlt(hdc, 340, 10, bitmap.bmWidth, bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);
 
-		//SelectObject(hdcMem, oldBitmap);
-		//DeleteDC(hdcMem);
-		//iCurr = 0;
-		//ReleaseDC(hWnd, hdc);
-		//return;
+		SelectObject(hdcMem, oldBitmap);
+		DeleteDC(hdcMem);
+		
+		ReleaseDC(hWnd, hdc);
+		return;
 	}
 
 	DrawALine(hdc, RGB(255, 0, 0), 3, xGfPosition[iCurr - 1], yGfPosition[iCurr - 1], xGfPosition[iCurr], yGfPosition[iCurr]);
