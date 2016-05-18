@@ -11,7 +11,7 @@ void Swap(Company& a, Company& b) {
 Heap::Heap() {
 	heapDimension = 0;
 	heap = nullptr;
-	cout << "Heap created - allocated 00 int memory!\n";
+	//cout << "Heap created - allocated 00 int memory!\n";
 }
 
 Heap::Heap(Company arr[], int heapDim) {
@@ -19,12 +19,12 @@ Heap::Heap(Company arr[], int heapDim) {
 	for (int i = 0; i < heapDim; i++) {
 		Push(arr[i]);
 	}
-	cout << "Heap created - allocated " << heapDim << " int memory!\n";
+	//cout << "Heap created - allocated " << heapDim << " int memory!\n";
 }
 
 Heap::~Heap() {
 	free(heap);
-	cout << "\nHeap deleted.\n";
+	//cout << "\nHeap deleted.\n";
 }
 
 // return index-ul parinte al nodului
@@ -87,7 +87,7 @@ void Heap::Pop(int index) {
 
 void Heap::Display(int index) {
 	for (int i = 0; i < heapDimension; i++) {
-		cout << heap[i].variation << " ";
+		//cout << heap[i].variation << " ";
 	}
 }
 
@@ -202,4 +202,11 @@ LPWSTR Heap::InfoList() {
 	}
 	free(convert);
 	return infoLP;
+}
+
+void Heap::Free() {
+	free(heap);
+	heap = nullptr;
+	heapDimension = 0;
+	Save();
 }

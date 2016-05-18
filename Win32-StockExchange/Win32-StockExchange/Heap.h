@@ -31,5 +31,6 @@ public:
 	int Search(Company searchElement, int startIndex);
 	Company ReturnCompany(int index);
 	LPWSTR InfoList();
+	void Free();
 };
 

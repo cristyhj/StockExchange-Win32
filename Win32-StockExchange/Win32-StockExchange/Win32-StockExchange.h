@@ -14,3 +14,4 @@ void DrawALine(HDC hdc, COLORREF color, int width, int startX, int startY, int s
 	SelectObject(hdc, hPenOld);
 	DeleteObject(hLinePen);
 }
+

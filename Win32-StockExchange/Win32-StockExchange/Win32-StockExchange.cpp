@@ -186,13 +186,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	
     switch (message)
     {
 	case WM_CREATE:
 		{
 			myFont = CreateFont(-MulDiv(12, GetDeviceCaps(GetDC(hWnd), LOGPIXELSY), 100),
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, L"MS Shell Dlg");
+			// timer pentru grafic
 			int ret = SetTimer(hWnd, 1, 250, NULL);
 			if (ret == 0)
 				MessageBox(hWnd, L"Could not SetTimer()!", L"Error", MB_OK | MB_ICONEXCLAMATION);
@@ -273,6 +273,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				hWnd,
 				(DLGPROC)Dialog1);
 			break;
+		case ID_FILE_RESETHEAP:
+			if (!investition.income)
+				heap.Free();
+			else
+				MessageBox(hWnd, TEXT("O investitie in desfasurare. Vindeti inainte de a reseta Heap-ul."), TEXT("Error"), MB_OK);
+			break;
 		case ID_FILE_SAVE:
 			heap.Save();
 			break;
@@ -286,9 +292,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	break;
 	case WM_TIMER:
 		{
+			// trece si schimba random fiecare inregistrare din heap
 			for (int i = 0; i < heap.Get(); i++) {
 				heap.RandomizeVary(i);
 			}
+			// se updateaza graficul cu inca o liniuta
 			if (investition.income) {
 				Company temp = heap.ReturnCompany(heap.Search(investition, 0));
 				yGfPosition[iCurr] = TransformFloat(temp.variation);
@@ -352,24 +360,14 @@ INT_PTR CALLBACK Dialog1(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam) 
 		HWND hText = GetDlgItem(hDlg, IDC_EDIT1);
 		LPWSTR infoLP = heap.InfoList();
 		SetWindowText(hText, infoLP);
+		free(infoLP);
 	}
 	}
 	return (INT_PTR)FALSE;
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+// Button functions
 
 
 void PushButtonAction() {
@@ -418,7 +416,7 @@ void InvestButtonAction() {
 		_itow_s(cIncome, investLPWSTR, MAX_PATH, 10);
 		wcscat_s(message, MAX_PATH, investLPWSTR);
 		wcscat_s(message, MAX_PATH, L" $.");
-		MessageBox(NULL, message, L"Error", MB_OK);
+		MessageBox(NULL, message, L"Info", MB_OK | MB_ICONINFORMATION);
 		
 		free(investLPWSTR);
 		free(message);
@@ -461,7 +459,7 @@ void WithdrawButtonAction(HWND hWnd) {
 
 	_itow_s((int)win, winLP, 200, 10);
 	wcscat_s(message, MAX_PATH, winLP);
-	wcscat_s(message, MAX_PATH, L" !!!");
+	wcscat_s(message, MAX_PATH, L" $!!!");
 	MessageBox(NULL, message, L"Mesaj", MB_OK);
 
 	free(message);
@@ -478,15 +476,14 @@ int TransformFloat(float f) {
 	f += 75;
 	return (int)f;
 }
+
 void UpdateGf(HWND hWnd, int iCurr) {
 	HDC hdc = GetDC(hWnd);
 	if (iCurr == MAX_GFRECORDS) {
 		//Cod de adaugat pentru cazul in care se termina graficul
-
+					// mai desenez o data peste bitmap-ul
 		iCurr = 0;
 
-		//hBitmap = (HBITMAP)LoadImage(hInst, L"graph.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-		//Load bitMap:
 		BITMAP 			bitmap;
 		HDC 			hdcMem;
 		HGDIOBJ 		oldBitmap;
