@@ -253,7 +253,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_HELP_INFO:
 		{
-			HWND aDiag = CreateDialog((HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE),
+			HWND aDiag = CreateDialog(hInst,
 				MAKEINTRESOURCE(IDD_DIALOG1),
 				hWnd,
 				(DLGPROC)Dialog1);
@@ -268,7 +268,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 			break;
 		case IDM_ABOUT:
-			DialogBox((HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE),
+			DialogBox(hInst,
 				MAKEINTRESOURCE(IDD_ABOUTBOX),
 				hWnd,
 				(DLGPROC)Dialog1);
