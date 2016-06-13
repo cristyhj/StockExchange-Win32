@@ -58,7 +58,7 @@ void Heap::PushDown(int startIndex) {
 	int childIndex = Child1(startIndex);
 	if (heapDimension - 1 < childIndex)
 		return;
-	if (heapDimension > childIndex && heap[childIndex].variation < heap[childIndex + 1].variation)
+	if (heapDimension - 1 > childIndex && heap[childIndex].variation < heap[childIndex + 1].variation)
 		childIndex++;
 	if (heap[startIndex].variation < heap[childIndex].variation) {
 		Swap(heap[startIndex], heap[childIndex]);
@@ -74,6 +74,7 @@ Company Heap::Peek(int sum) {
 // Operatia de Push: adaugam in coada si facem PushUp pana cand se ordoneaza
 void Heap::Push(Company company) {
 	heap = (Company*)realloc(heap, (heapDimension + 1) * sizeof(Company));
+	if (!heap) MessageBox(NULL, L"Eroare la realloc.", L"Error!", MB_ICONERROR);
 	heap[heapDimension] = company;
 	PushUp(heapDimension++);
 }
@@ -82,6 +83,7 @@ void Heap::Push(Company company) {
 void Heap::Pop(int index) {
 	heap[index] = heap[--heapDimension];
 	heap = (Company*)realloc(heap, heapDimension * sizeof(int));
+	if (!heap) MessageBox(NULL, L"Eroare la realloc.", L"Error!", MB_ICONERROR);
 	PushDown(index);
 }
 

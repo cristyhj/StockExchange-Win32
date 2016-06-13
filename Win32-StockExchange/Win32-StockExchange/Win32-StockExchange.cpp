@@ -106,7 +106,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WIN32STOCKEXCHANGE));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hCursor        = LoadCursor(nullptr, IDC_HAND);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+0);
     wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_WIN32STOCKEXCHANGE);
     wcex.lpszClassName  = szWindowClass;
@@ -142,13 +142,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    pushButton = CreateWindowEx(0, L"BUTTON", L"Add Company", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
 	   20, 90, 275, 30, hWnd, NULL, NULL, NULL);
-   companyNameBox = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_LEFT,
+   companyNameBox = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_LEFT | WS_TABSTOP,
 	   60, 30, 235, 20, hWnd, NULL, NULL, NULL);
-   incomeBox = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_LEFT | ES_NUMBER,
+   incomeBox = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_LEFT | ES_NUMBER | WS_TABSTOP,
 	   60, 60, 235, 20, hWnd, NULL, NULL, NULL);
    investButton = CreateWindowEx(0, L"BUTTON", L"Invest!", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
 	   20, 190, 275, 30, hWnd, NULL, NULL, NULL);
-   investSumBox = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_LEFT | ES_NUMBER,
+   investSumBox = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_LEFT | ES_NUMBER | WS_TABSTOP,
 	   60, 160, 235, 20, hWnd, NULL, NULL, NULL);
    withdrawButton = CreateWindowEx(0, L"BUTTON", L"Vindeti Acum!", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
 	   20, 240, 275, 40, hWnd, NULL, NULL, NULL);
